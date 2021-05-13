@@ -22,7 +22,6 @@ for(int i=1; i<=1024; i++)
 vector<string> blocks= block(bfile1,128); 
 
 int blocknumber=0;
-
 for(int i=0; i< blocks.size(); i++)
     {
         blocknumber=fsys.addblock("file1",blocks[i]);

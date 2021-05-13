@@ -12,7 +12,6 @@ class Filesys: public Sdisk
     public:
         Filesys(string diskname, int numberofblocks, int blocksize);
         int fsclose();
-        void fssynch();
         int newfile(string file);
         int rmfile(string file);
         int getfirstblock(string file);
@@ -29,6 +28,7 @@ class Filesys: public Sdisk
         vector<int> fat;     //FAT
         void buildfs();
         void readfs();
+        void fssynch();
         bool checkblock(string filename, int blocknumber);
 };
 #endif

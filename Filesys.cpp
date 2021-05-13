@@ -9,15 +9,16 @@ Filesys::Filesys(string diskname, int numberofblocks, int blocksize)
     : Sdisk(diskname, numberofblocks, blocksize)
 {
     string buffer;
-    int code = getblock(0, buffer);
+    getblock(0, buffer);
+    /*int code = getblock(0, buffer);
     if(code == 0)
     {
         cout << "bad device";
         return;
-    }
+    }*/
     rootsize = getblocksize()/10;
     fatsize = (getnumberofblocks()*5)/ getblocksize() + 1;
-    code = getblock(1, buffer);
+    //code = getblock(1, buffer);
     if (buffer[0] == '#')
     {// no filesystem
         buildfs();
@@ -26,50 +27,46 @@ Filesys::Filesys(string diskname, int numberofblocks, int blocksize)
     {
         readfs();
     }
-    // Changed during Lecture 8^^
-    rootsize = getblocksize()/10;
-    fatsize = (getnumberofblocks()*5)/ blocksize + 1;
+    fssynch();
     
 };
 
 void Filesys::buildfs()
 {
-    ostringstream ostream;
+    //ostringstream ostream;
     for( int i = 0; i < rootsize; i++)
     {
         filename.push_back("xxxx");
         firstblock.push_back(0);
-        ostream << "xxxx" << " " << 0 << " ";
+        //ostream << "xxxx" << " " << 0 << " ";
     }
-    string buffer = ostream.str();
-    vector<string> blocks = block(buffer, getblocksize());
-    putblock(1, blocks[0]);
+    //string buffer = ostream.str();
+    //vector<string> blocks = block(buffer, getblocksize());
+    //putblock(1, blocks[0]);
 
-    ostringstream ostream2;
+    //ostringstream ostream2;
     fat.push_back(fatsize + 2);
-    //ostream2 << fatsize + 2 << " ";
     fat.push_back(1);
-    //ostream2 << 1 << " ";
     for(int i = 0; i < fatsize; i++)
     {
         fat.push_back(1);
-        //ostream2 << 1 << " ";
     }
     for(int i = fatsize + 2; i < getnumberofblocks(); i++)
     {
         fat.push_back(i + 1);
     }
     fat[fat.size()-1] = 0;
-    for(int i = 0; i < fat.size(); i++)
+    /*for(int i = 0; i < fat.size(); i++)
     {
         ostream2 << fat[i] << " ";
     }
     string buffer2 = ostream2.str();
-    vector<string> blocks2 = block(buffer, getblocksize());
+    vector<string> blocks2 = block(buffer2, getblocksize());
     for(int i =0; i< blocks2.size(); i++)
     {
         putblock(2+i, blocks2[i]);
-    }
+    }*/
+    fssynch();
 }
 
 int Filesys::fsclose(){
@@ -141,9 +138,9 @@ int Filesys::newfile(string file){
     {
         if (filename[i] == file)
         {
-            cout << "File exists";
+            cout << "File exists\n";
+            return 0;
         }
-        return 0;
     }
     
     for(int i = 0; i < filename.size(); i++)
@@ -156,7 +153,7 @@ int Filesys::newfile(string file){
                 return 1;
             }
     }
-    cout << "No room in root";
+    cout << "No room in root\n";
     return 0;
 };
 
@@ -175,14 +172,14 @@ int Filesys::getfirstblock(string file){
             return firstblock[i];
         }
     }
-    cout << "no such file";
+    cout << "no such file\n";
     return -1;
 };
 
 int Filesys::addblock(string file, string block){
     if(block.length() != getblocksize())
     {
-        cout << "incorrect blocksize error";
+        cout << "incorrect blocksize error\n";
         return 0;
     }
     // check if file exists first block
@@ -190,7 +187,7 @@ int Filesys::addblock(string file, string block){
     int first = getfirstblock(file);
     if(first == -1)
     {
-        cout << " no such file";
+        cout << " no such file\n";
         return 0;
     }
     int allocate = fat[0];
@@ -220,7 +217,8 @@ int Filesys::addblock(string file, string block){
     return allocate;
 };
 
-int Filesys::delblock(string file, int blocknumber){
+int Filesys::delblock(string file, int blocknumber)
+{
     if(!checkblock(file, blocknumber))
     {
         return 0;
@@ -228,7 +226,7 @@ int Filesys::delblock(string file, int blocknumber){
     int b = getfirstblock(file);
     if(blocknumber == b) // block we are deleating is first block
     {
-        for(int i = 0; i < filename.size(); i++)
+        for(int i = 0; i < file[i]; i++)
         {
             if(filename[i] == file) //found it
             {
@@ -245,8 +243,10 @@ int Filesys::delblock(string file, int blocknumber){
         }
         fat[b] = fat[blocknumber];
     }
+
     fat[blocknumber] = fat[0]; // update free list
     fat[0] = blocknumber;
+    fssynch();
     return 0;
 
 };
@@ -290,7 +290,7 @@ int Filesys::nextblock(string file, int blocknumber){
 
 bool Filesys::checkblock(string file, int blocknumber){
     int b = getfirstblock(file);
-    if (b == 1)
+    if (b == -1)
     {
         return false;
     }
