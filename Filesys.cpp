@@ -2,9 +2,9 @@
 #include <iostream>
 #include "Filesys.h"
 #include "block.h"
+#include<string>
 
 using namespace std;
-
 
 Filesys::Filesys(string diskname, int numberofblocks, int blocksize)
     : Sdisk(diskname, numberofblocks, blocksize)
@@ -309,3 +309,16 @@ bool Filesys::checkblock(string file, int blocknumber){
     }
     return false;
 };
+
+vector<string> Filesys::ls()
+{
+    vector<string> flist;
+    for(int i = 0; i < filename.size(); i++)
+    {
+        if(filename[i] != "xxxxx")
+        {
+            flist.push_back(filename[i]);
+        }
+    }
+    return flist;
+}

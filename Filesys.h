@@ -5,7 +5,6 @@
 #include "Sdisk.h"
 #include <vector>
 
-using namespace std;
 
 class Filesys: public Sdisk
 {
@@ -20,9 +19,11 @@ class Filesys: public Sdisk
         int readblock(string file, int blocknumber, string& buffer);
         int writeblock(string file, int blocknumber, string buffer);
         int nextblock(string file, int blocknumber);
+        vector<string> ls(); 
     private:
         int rootsize;           // maximum number of entries in ROOT
-        int fatsize;            // number of blocks occupied by FAT
+        int fatsize;
+           // number of blocks occupied by FAT
         vector<string> filename;   // filenames in ROOT
         vector<int> firstblock; // firstblocks in ROOT
         vector<int> fat;     //FAT
